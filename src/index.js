@@ -7,7 +7,7 @@ import Statsd from "node-statsd"
 import os from "os"
 import assert from "assert"
 
-function gaugeStats(prefix, key, client, value) {
+function gaugeStats(client, prefix, key, value) {
   return new Promise((resolve) => {
     client.gauge(`${prefix}.${key}`, value, () => resolve())
   })
@@ -55,20 +55,13 @@ function notifyStatsd(data, options, done) {
     done()
   })
 
-  async.series([
-    (callback) => {
-      Promise.all(async.forEachOf(data.data.average.firstView, (value, key) => {
-        gaugeStats("firstView", key, client, value)
-      })).then(callback())
-    },
-    (callback) => {
-      Promise.all(async.forEachOf(data.data.average.repeatView, (value, key) => {
-        gaugeStats("repeatView", key, client, value)
-      })).then(callback())
-    }
-  ], () => {
-    client.close()
-  })
+  Promise.all(async.forEachOf(data.data.average.firstView, (value, key) => {
+    gaugeStats(client, "firstView", key, value)
+  }))
+  .then(Promise.all(async.forEachOf(data.data.average.repeatView, (value, key) => {
+    gaugeStats(client, "repeatView", key, value)
+  })))
+  .then(client.close())
 }
 
 function getTestResults(wpt, testId, options, done) {
