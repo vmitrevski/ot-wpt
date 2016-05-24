@@ -57,10 +57,10 @@ function notifyStatsd(data, options, done) {
 
   Promise.all(async.forEachOf(data.data.average.firstView, (value, key) => {
     gaugeStats(client, "firstView", key, value)
-  }))
-  .then(Promise.all(async.forEachOf(data.data.average.repeatView, (value, key) => {
+  }),
+  async.forEachOf(data.data.average.repeatView, (value, key) => {
     gaugeStats(client, "repeatView", key, value)
-  })))
+  }))
   .then(client.close())
 }
 
