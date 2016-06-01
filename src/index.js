@@ -41,7 +41,7 @@ function notifyLogstash(data, options, done) {
     type: "wpt-service-result-v1",
     host: os.hostname(),
     wpt: data
-  }, () => { logger.close(done) })
+  }, () => logger.close(done))
 }
 
 function notifyStatsd(data, options, done) {
@@ -51,9 +51,7 @@ function notifyStatsd(data, options, done) {
     prefix: options.statsd.prefix
   })
 
-  client.socket.on("close", () => {
-    done()
-  })
+  client.socket.on("close", () => done())
 
   Promise.all(async.forEachOf(data.data.average.firstView, (value, key) => {
     gaugeStats(client, "firstView", key, value)
@@ -61,7 +59,7 @@ function notifyStatsd(data, options, done) {
   async.forEachOf(data.data.average.repeatView, (value, key) => {
     gaugeStats(client, "repeatView", key, value)
   }))
-  .then(client.close())
+  .then(() => client.close())
 }
 
 function getTestResults(wpt, testId, options, done) {
